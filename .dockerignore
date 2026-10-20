@@ -1,0 +1,6 @@
+data
+.git
+results
+.venv
+__pycache__
+.DS_Store

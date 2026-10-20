@@ -1,0 +1,11 @@
+Expression (Project names)
+  Sorting (Sorting for ORDER BY)
+    Expression ((Before ORDER BY + Projection))
+      Aggregating
+        Expression
+          ReadFromMergeTree (state_max)
+          Indexes:
+            PrimaryKey
+              Condition: true
+              Parts: 1/1
+              Granules: 1/130

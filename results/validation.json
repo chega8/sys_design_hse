@@ -1,0 +1,12 @@
+{
+  "source_rows": {
+    "train.csv": 786431,
+    "test.csv": 262144
+  },
+  "total_rows": 1048575,
+  "states": 51,
+  "unique_source_rows": true,
+  "matches_csv_reference": true,
+  "matches_without_projection": true,
+  "clickhouse_version": "25.3.3.42"
+}

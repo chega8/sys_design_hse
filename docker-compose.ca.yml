@@ -1,0 +1,9 @@
+# Необязательный override для сети с собственным доверенным CA.
+services:
+  loader:
+    build:
+      secrets:
+        - pip_ca
+secrets:
+  pip_ca:
+    file: ${CA_CERT_PATH:?Укажите путь к доверенному PEM bundle}
