@@ -1,0 +1,9 @@
+15:20:50  Running with dbt=1.10.23
+15:20:50  This version of dbt is deprecated and no longer receives regular patches, including for known bugs. We recommend upgrading to a newer supported version of dbt: https://docs.getdbt.com/docs/dbt-versions
+15:20:50  Registered adapter: clickhouse=1.9.8
+15:20:51  Found 7 models, 34 data tests, 1 source, 871 macros, 3 unit tests
+15:20:51  
+15:20:51  Concurrency: 2 threads (target='dev')
+15:20:51  
+15:20:52  Building catalog
+15:20:52  Catalog written to <repo>/dbt/target/catalog.json

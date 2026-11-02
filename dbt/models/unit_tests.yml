@@ -1,0 +1,158 @@
+version: 2
+unit_tests:
+- name: staging_normalizes_and_buckets
+  model: stg_transactions
+  given:
+  - input: source('raw', 'transactions')
+    rows:
+    - source_file: train.csv
+      source_row: 1
+      transaction_time: '2020-01-06 23:10:00'
+      us_state: ' ny '
+      cat_id: ' Grocery '
+      merch: ' Shop '
+      name_1: A
+      name_2: B
+      street: Road
+      post_code: '001'
+      amount: 0
+      target: 0
+    - source_file: train.csv
+      source_row: 2
+      transaction_time: '2020-01-06 23:10:00'
+      us_state: ' ny '
+      cat_id: ' Grocery '
+      merch: ' Shop '
+      name_1: A
+      name_2: B
+      street: Road
+      post_code: '001'
+      amount: 99.99
+      target: 1
+    - source_file: train.csv
+      source_row: 3
+      transaction_time: '2020-01-06 23:10:00'
+      us_state: ' ny '
+      cat_id: ' Grocery '
+      merch: ' Shop '
+      name_1: A
+      name_2: B
+      street: Road
+      post_code: '001'
+      amount: 100
+      target: null
+    - source_file: train.csv
+      source_row: 4
+      transaction_time: '2020-01-06 23:10:00'
+      us_state: ' ny '
+      cat_id: ' Grocery '
+      merch: ' Shop '
+      name_1: A
+      name_2: B
+      street: Road
+      post_code: '001'
+      amount: 499.99
+      target: 0
+    - source_file: train.csv
+      source_row: 5
+      transaction_time: '2020-01-06 23:10:00'
+      us_state: ' ny '
+      cat_id: ' Grocery '
+      merch: ' Shop '
+      name_1: A
+      name_2: B
+      street: Road
+      post_code: '001'
+      amount: 500
+      target: 1
+  expect:
+    rows:
+    - transaction_id: train.csv:1
+      us_state: NY
+      category: grocery
+      merchant: shop
+      weekday: 1
+      transaction_hour: 23
+      amount_bucket: SMALL
+      is_fraud: 0
+    - transaction_id: train.csv:2
+      us_state: NY
+      category: grocery
+      merchant: shop
+      weekday: 1
+      transaction_hour: 23
+      amount_bucket: SMALL
+      is_fraud: 1
+    - transaction_id: train.csv:3
+      us_state: NY
+      category: grocery
+      merchant: shop
+      weekday: 1
+      transaction_hour: 23
+      amount_bucket: MEDIUM
+      is_fraud: null
+    - transaction_id: train.csv:4
+      us_state: NY
+      category: grocery
+      merchant: shop
+      weekday: 1
+      transaction_hour: 23
+      amount_bucket: MEDIUM
+      is_fraud: 0
+    - transaction_id: train.csv:5
+      us_state: NY
+      category: grocery
+      merchant: shop
+      weekday: 1
+      transaction_hour: 23
+      amount_bucket: LARGE
+      is_fraud: 1
+- name: fraud_denominator_ignores_unknown_labels
+  model: mart_fraud_by_category
+  given:
+  - input: ref('stg_transactions')
+    rows:
+    - category: a
+      amount: 100
+      is_fraud: 1
+    - category: a
+      amount: 200
+      is_fraud: 0
+    - category: a
+      amount: 300
+      is_fraud: null
+    - category: b
+      amount: 10
+      is_fraud: null
+  expect:
+    rows:
+    - category: a
+      transaction_count: 3
+      labeled_count: 2
+      fraud_count: 1
+      fraud_rate: 50
+      total_amount: 600
+      fraud_amount: 100
+    - category: b
+      transaction_count: 1
+      labeled_count: 0
+      fraud_count: 0
+      fraud_rate: null
+      total_amount: 10
+      fraud_amount: 0
+- name: customer_risk_thresholds
+  model: mart_customer_risk_profile
+  given:
+  - input: ref('stg_transactions')
+    format: sql
+    fixture: customer_history
+  expect:
+    rows:
+    - customer_id: high
+      risk_level: HIGH
+    - customer_id: medium
+      risk_level: MEDIUM
+    - customer_id: low
+      risk_level: LOW
+    - customer_id: unknown
+      risk_level: UNKNOWN

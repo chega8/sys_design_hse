@@ -135,3 +135,7 @@ docker compose run --rm --no-deps loader python scripts/verify_export.py /data/t
 CA_CERT_PATH=/absolute/path/to/ca-bundle.pem docker compose \
   -f docker-compose.yml -f docker-compose.ca.yml build loader
 ```
+
+## ДЗ4
+
+Проект dbt поверх этих же данных: [dbt/README.md](dbt/README.md).

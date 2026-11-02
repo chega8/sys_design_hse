@@ -1,0 +1,63 @@
+{
+  "source": {
+    "rows": "1048575",
+    "labeled": "786431",
+    "unlabeled": "262144"
+  },
+  "models": {
+    "stg_transactions": "1048575",
+    "mart_daily_state_metrics": "21473",
+    "mart_fraud_by_category": "14",
+    "mart_fraud_by_state": "51",
+    "mart_customer_risk_profile": "965",
+    "mart_hourly_fraud_pattern": "168",
+    "mart_merchant_analytics": "693"
+  },
+  "top_fraud_categories": [
+    {
+      "category": "shopping_net",
+      "transaction_count": "78899",
+      "labeled_count": "59080",
+      "fraud_count": "1019",
+      "fraud_rate": 1.7247799593771158,
+      "total_amount": 6979797.94,
+      "fraud_amount": 1017960.56
+    },
+    {
+      "category": "misc_net",
+      "transaction_count": "51082",
+      "labeled_count": "38217",
+      "fraud_count": "552",
+      "fraud_rate": 1.4443833895910196,
+      "total_amount": 4143039.91,
+      "fraud_amount": 439639.03
+    },
+    {
+      "category": "grocery_pos",
+      "transaction_count": "99906",
+      "labeled_count": "74875",
+      "fraud_count": "1049",
+      "fraud_rate": 1.4010016694490819,
+      "total_amount": 11687307.82,
+      "fraud_amount": 327669.12
+    },
+    {
+      "category": "shopping_pos",
+      "transaction_count": "94353",
+      "labeled_count": "70861",
+      "fraud_count": "509",
+      "fraud_rate": 0.718307672767813,
+      "total_amount": 7481712.61,
+      "fraud_amount": 445574.69
+    },
+    {
+      "category": "gas_transport",
+      "transaction_count": "106430",
+      "labeled_count": "79995",
+      "fraud_count": "376",
+      "fraud_rate": 0.4700293768360522,
+      "total_amount": 6749927.86,
+      "fraud_amount": 4742.8
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: sqlfluff-lint
+        name: sqlfluff (dbt)
+        entry: sh -c 'cd dbt && sqlfluff lint models macros tests'
+        language: system
+        files: ^dbt/.*\.sql$
+        pass_filenames: false

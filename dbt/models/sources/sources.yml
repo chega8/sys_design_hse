@@ -1,0 +1,8 @@
+version: 2
+sources:
+  - name: raw
+    schema: homework
+    description: Транзакции из ДЗ2, загруженные через Kafka. В test.csv нет target.
+    tables:
+      - name: transactions
+        description: Исходные train.csv и test.csv без изменения меток.

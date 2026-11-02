@@ -1,0 +1,283 @@
+version: 2
+models:
+- name: stg_transactions
+  description: Нормализованные транзакции. NULL target означает отсутствие метки,
+    а не отсутствие фрода.
+  data_tests:
+  - dbt_expectations.expect_table_row_count_to_be_between:
+      arguments:
+        min_value: 1
+  columns:
+  - name: transaction_id
+    description: Файл и номер строки в исходнике.
+    data_tests:
+    - not_null
+    - unique
+  - name: transaction_time
+    description: Время транзакции UTC.
+    data_tests:
+    - not_null
+  - name: transaction_date
+    description: Дата UTC.
+    data_tests:
+    - not_null
+  - name: weekday
+    description: 'День недели: понедельник 1, воскресенье 7.'
+    data_tests:
+    - accepted_values:
+        arguments:
+          values:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          quote: false
+  - name: transaction_hour
+    description: Час UTC.
+    data_tests:
+    - accepted_values:
+        arguments:
+          values:
+          - 0
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15
+          - 16
+          - 17
+          - 18
+          - 19
+          - 20
+          - 21
+          - 22
+          - 23
+          quote: false
+  - name: us_state
+    description: Код штата; DC тоже есть в данных.
+    data_tests:
+    - not_null
+  - name: category
+    description: Категория покупки.
+    data_tests:
+    - not_null
+  - name: merchant
+    description: Название мерчанта.
+    data_tests:
+    - not_null
+  - name: customer_id
+    description: 'Хеш имени, фамилии, улицы и индекса: приближение ID клиента.'
+    data_tests:
+    - not_null
+  - name: amount
+    description: Сумма в исходной валюте, две цифры после запятой.
+    data_tests:
+    - not_null
+  - name: amount_bucket
+    description: SMALL <100, MEDIUM от100 до500, LARGE от500.
+    data_tests:
+    - accepted_values:
+        arguments:
+          values:
+          - SMALL
+          - MEDIUM
+          - LARGE
+  - name: is_fraud
+    description: 'Метка: 0/1 из train, NULL из test.'
+    data_tests:
+    - accepted_values:
+        arguments:
+          values:
+          - 0
+          - 1
+          quote: false
+- name: mart_daily_state_metrics
+  description: Дневной оборот по штатам.
+  data_tests:
+  - dbt_utils.unique_combination_of_columns:
+      arguments:
+        combination_of_columns:
+        - transaction_date
+        - us_state
+  columns:
+  - name: transaction_date
+    description: Дата UTC.
+    data_tests:
+    - not_null
+  - name: us_state
+    description: Штат.
+    data_tests:
+    - not_null
+  - name: transaction_count
+    description: Количество всех транзакций, включая строки без метки.
+  - name: total_amount
+    description: Сумма всех транзакций.
+  - name: average_amount
+    description: Средний чек по всем транзакциям.
+  - name: p95_amount
+    description: Точный 95-й перцентиль суммы.
+  - name: large_transaction_share
+    description: Доля транзакций от500, от0 до1.
+- name: mart_fraud_by_category
+  description: Частота и сумма фрода по категориям.
+  data_tests:
+  - dbt_utils.unique_combination_of_columns:
+      arguments:
+        combination_of_columns:
+        - category
+  columns:
+  - name: category
+    description: Категория.
+    data_tests:
+    - not_null
+  - name: transaction_count
+    description: Количество всех транзакций, включая строки без метки.
+  - name: labeled_count
+    description: Количество транзакций с известной меткой.
+  - name: fraud_count
+    description: Количество транзакций с меткой 1.
+  - name: fraud_rate
+    description: 100 * fraud_count / labeled_count; NULL, если меток нет.
+  - name: total_amount
+    description: Сумма всех транзакций.
+  - name: fraud_amount
+    description: Сумма транзакций с меткой 1.
+- name: mart_fraud_by_state
+  description: Фрод и число клиентов/мерчантов по штатам.
+  data_tests:
+  - dbt_utils.unique_combination_of_columns:
+      arguments:
+        combination_of_columns:
+        - us_state
+  columns:
+  - name: us_state
+    description: Штат.
+    data_tests:
+    - not_null
+  - name: transaction_count
+    description: Количество всех транзакций, включая строки без метки.
+  - name: labeled_count
+    description: Количество транзакций с известной меткой.
+  - name: fraud_count
+    description: Количество транзакций с меткой 1.
+  - name: fraud_rate
+    description: 100 * fraud_count / labeled_count; NULL, если меток нет.
+  - name: total_amount
+    description: Сумма всех транзакций.
+  - name: fraud_amount
+    description: Сумма транзакций с меткой 1.
+  - name: customer_count
+    description: Уникальные составные ID клиентов.
+  - name: merchant_count
+    description: Уникальные названия мерчантов.
+- name: mart_customer_risk_profile
+  description: Описательный профиль клиента по истории; не прогнозная модель.
+  data_tests:
+  - dbt_utils.unique_combination_of_columns:
+      arguments:
+        combination_of_columns:
+        - customer_id
+  columns:
+  - name: customer_id
+    description: Составной ID клиента.
+    data_tests:
+    - not_null
+  - name: transaction_count
+    description: Количество всех транзакций, включая строки без метки.
+  - name: labeled_count
+    description: Количество транзакций с известной меткой.
+  - name: fraud_count
+    description: Количество транзакций с меткой 1.
+  - name: fraud_rate
+    description: 100 * fraud_count / labeled_count; NULL, если меток нет.
+  - name: average_amount
+    description: Средний чек по всем транзакциям.
+  - name: total_amount
+    description: Сумма всех транзакций.
+  - name: first_transaction
+    description: Первая транзакция.
+  - name: last_transaction
+    description: Последняя транзакция.
+  - name: risk_level
+    description: HIGH при fraud_rate >=5%, MEDIUM >=1%, иначе LOW; без меток UNKNOWN.
+    data_tests:
+    - accepted_values:
+        arguments:
+          values:
+          - HIGH
+          - MEDIUM
+          - LOW
+          - UNKNOWN
+- name: mart_hourly_fraud_pattern
+  description: Фрод по дню недели и часу UTC.
+  data_tests:
+  - dbt_utils.unique_combination_of_columns:
+      arguments:
+        combination_of_columns:
+        - weekday
+        - transaction_hour
+  columns:
+  - name: weekday
+    description: Понедельник1 — воскресенье7.
+    data_tests:
+    - not_null
+  - name: transaction_hour
+    description: Час UTC.
+    data_tests:
+    - not_null
+  - name: transaction_count
+    description: Количество всех транзакций, включая строки без метки.
+  - name: labeled_count
+    description: Количество транзакций с известной меткой.
+  - name: fraud_count
+    description: Количество транзакций с меткой 1.
+  - name: fraud_rate
+    description: 100 * fraud_count / labeled_count; NULL, если меток нет.
+  - name: average_amount
+    description: Средний чек по всем транзакциям.
+- name: mart_merchant_analytics
+  description: Оборот и эвристический флаг мерчанта.
+  data_tests:
+  - dbt_utils.unique_combination_of_columns:
+      arguments:
+        combination_of_columns:
+        - merchant
+  columns:
+  - name: merchant
+    description: Название мерчанта.
+    data_tests:
+    - not_null
+  - name: transaction_count
+    description: Количество всех транзакций, включая строки без метки.
+  - name: labeled_count
+    description: Количество транзакций с известной меткой.
+  - name: fraud_count
+    description: Количество транзакций с меткой 1.
+  - name: fraud_rate
+    description: 100 * fraud_count / labeled_count; NULL, если меток нет.
+  - name: average_amount
+    description: Средний чек по всем транзакциям.
+  - name: turnover
+    description: Сумма всех транзакций.
+  - name: is_suspicious
+    description: 1 при >=100 известных меток и fraud_rate >=1%.
+    data_tests:
+    - accepted_values:
+        arguments:
+          values:
+          - 0
+          - 1
+          quote: false

@@ -1,0 +1,13 @@
+[sqlfluff]
+dialect = clickhouse
+templater = dbt
+max_line_length = 120
+# Keep case-sensitive ClickHouse function names and the weekday column.
+exclude_rules = ambiguous.column_count, references.qualification, capitalisation.functions, references.keywords
+[sqlfluff:templater:dbt]
+project_dir = .
+profiles_dir = .
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = lower
+[sqlfluff:rules:capitalisation.functions]
+extended_capitalisation_policy = consistent
